@@ -1,0 +1,10 @@
+{
+  "buttons": {
+    "login": "Log in",
+    "sign_in": "Register",
+    "logout": "Log out",
+    "sign_in_fb": "Register with Facebook",
+    "sign_in_google": "Register with Google",
+    "sign_in_apple": "Register with Apple"
+  }
+}

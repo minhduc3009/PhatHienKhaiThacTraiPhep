@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "805272252636",
+    "project_id": "farm-care-ai",
+    "storage_bucket": "farm-care-ai.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805272252636:android:ec48fa82a3a89c39ebc419",
+        "android_client_info": {
+          "package_name": "com.khoahockythuat.farm_care_ai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "805272252636-9th4qosiqg8k8a2q0u58amrueutasdes.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVTDhcA_POUoK_kRv9HivxkW6_7rkx7bw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "805272252636-9th4qosiqg8k8a2q0u58amrueutasdes.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

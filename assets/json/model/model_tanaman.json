@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "1",
+    "family": "1",
+    "images":"https://images.baodantoc.vn/uploads/2021/Th%C3%A1ng%206/Ng%C3%A0y_10/Thanh/tac-dung-cua-cay-oi_nongnghiep-120034_919.jpg",
+    "detail":"1",
+    "others": "1"
+  },
+  {
+    "id": 2,
+    "name": "2",
+    "family": "2",
+    "images":"https://i.ex-cdn.com/nongnghiep.vn/files/dungct/2021/04/06/qua-oi_nongnghiep_2-214847_892.jpg",
+    "detail":"2",
+    "others": "2"
+  }
+]
