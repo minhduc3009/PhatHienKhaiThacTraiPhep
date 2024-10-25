@@ -1,4 +1,4 @@
-package com.khoahockythuat.farm_care_ai
+package com.khoahockythuat.aiot_nano
 
 import io.flutter.embedding.android.FlutterActivity
 

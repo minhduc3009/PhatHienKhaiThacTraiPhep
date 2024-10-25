@@ -1,36 +1,26 @@
 {
   "project_info": {
-    "project_number": "805272252636",
-    "project_id": "farm-care-ai",
-    "storage_bucket": "farm-care-ai.appspot.com"
+    "project_number": "851967648288",
+    "project_id": "aiot-nano",
+    "storage_bucket": "aiot-nano.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:805272252636:android:ec48fa82a3a89c39ebc419",
+        "mobilesdk_app_id": "1:851967648288:android:27409633c643568b155245",
         "android_client_info": {
-          "package_name": "com.khoahockythuat.farm_care_ai"
+          "package_name": "com.khoahockythuat.aiot_nano"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "805272252636-9th4qosiqg8k8a2q0u58amrueutasdes.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDVTDhcA_POUoK_kRv9HivxkW6_7rkx7bw"
+          "current_key": "AIzaSyCLBzSTpjye-dwQC--7JdatVVrEsIK0PqY"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "805272252636-9th4qosiqg8k8a2q0u58amrueutasdes.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
