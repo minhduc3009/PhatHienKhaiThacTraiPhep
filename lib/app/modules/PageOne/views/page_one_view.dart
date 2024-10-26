@@ -25,7 +25,7 @@ class BottomNavigationBarExample extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Scan - Predict plant diseases"),
+        title: const Text("Page One"),
       ),
       body: Obx(() {
         final _selectedIndex =
