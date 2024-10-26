@@ -58,7 +58,7 @@ rename setAppName --targets ios,android --value "PlantSR"
 ## Đổi logo app:(Bỏ qua nếu ko cần)
 
 Bước 1: Thay đổi đường dẫn đến ảnh logo mới : sửa "image_path" trong pubspec.yaml
-ví dụ hiện đang dùng là : image_path: "assets/images/PlantSR_logo.jpg"
+ví dụ hiện đang dùng là : image_path: "assets/images/app_logo.png"
 Sau khi sửa logo chạy lệnh sau để áp dụng:
 
 ```bash

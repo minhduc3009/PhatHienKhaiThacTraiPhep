@@ -5,7 +5,7 @@ class ImageConstant {
   static const onBoarding2 = "assets/images/onboarding2.jpeg";
   static const onBoarding3 = "assets/images/onboarding3.jpeg";
   static const splashLogo = "assets/images/splash.gif";
-  static const logoApp = "assets/images/PlantSR_logo.jpg";
+  static const logoApp = "assets/images/app_logo.png";
   static const topHomeDecoration = "assets/images/banner1.png";
   static const topDetailDecoration = "assets/images/banner2.png";
   static const logoTextApp = "assets/images/hele_logo_text.png";
