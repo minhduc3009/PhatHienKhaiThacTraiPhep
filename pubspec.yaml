@@ -37,6 +37,8 @@ dependencies:
   webview_flutter: ^4.4.1
   shimmer: ^3.0.0
   syncfusion_flutter_gauges: ^23.1.42
+  audiofileplayer: ^2.1.1
+  dio: ^5.7.0
 
 flutter_launcher_icons:
   android: "launcher_icon"

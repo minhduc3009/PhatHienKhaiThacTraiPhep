@@ -12,8 +12,8 @@
 - [Android Studio](https://developer.android.com/studio) (để build Android)
 - [Xcode](https://developer.apple.com/xcode/) (để build iOS, chỉ trên macOS)
 
-## Cài Đặt
-
+# Cài Đặt Các Công Cụ Cần
+## FVM : Công cụ quản lý phiên bản
 ### Bước 1: Cài Đặt FVM : Flutter Version Management (FVM)
 
 Nếu bạn chưa cài đặt FVM, hãy cài đặt bằng lệnh sau:
@@ -58,7 +58,7 @@ rename setAppName --targets ios,android --value "PlantSR"
 ## Đổi logo app:(Bỏ qua nếu ko cần)
 
 Bước 1: Thay đổi đường dẫn đến ảnh logo mới : sửa "image_path" trong pubspec.yaml
-ví dụ hiện đang dùng là : image_path: "assets/images/app_logo.png"
+ví dụ hiện đang dùng là : image_path: "assets/images/PlantSR_logo.jpg"
 Sau khi sửa logo chạy lệnh sau để áp dụng:
 
 ```bash
@@ -107,3 +107,85 @@ fvm flutter build apk --release
 ```bash
 fvm flutter build ios --release
 ```
+
+==========================================================================
+# Hướng Dẫn FireBase và Flutter
+Để kết nối ứng dụng Flutter với Firebase, bạn cần cài đặt và cấu hình công cụ Firebase CLI và FlutterFire CLI. 
+Dưới đây là các bước hướng dẫn chi tiết:
+
+### Bước 1: Cài đặt Firebase CLI
+
+1. Tải Firebase CLI bằng cách chạy lệnh sau (yêu cầu cài đặt **Node.js** trước):
+
+   ```bash
+   npm install -g firebase-tools
+   ```
+
+2. Đăng nhập vào Firebase bằng cách sử dụng lệnh:
+
+   ```bash
+   firebase login
+   ```
+
+3. Đảm bảo rằng bạn đã tạo một dự án Firebase trên [Firebase Console](https://console.firebase.google.com/).
+
+### Bước 2: Cài đặt FlutterFire CLI
+
+1. Tiếp theo, cài đặt FlutterFire CLI bằng cách chạy lệnh sau:
+
+   ```bash
+   dart pub global activate flutterfire_cli
+   ```
+
+2. Sau khi cài đặt, hãy đảm bảo `flutterfire` có thể được truy cập từ terminal của bạn bằng cách thêm `~/.pub-cache/bin` vào PATH của bạn (nếu cần).
+
+### Bước 3: Chạy lệnh `flutterfire configure`
+
+1. Trong thư mục dự án Flutter, chạy lệnh `flutterfire configure`:
+
+   ```bash
+   flutterfire configure
+   ```
+
+2. Công cụ sẽ yêu cầu bạn chọn dự án Firebase mà bạn muốn liên kết với ứng dụng Flutter của mình. Nếu bạn đã có nhiều dự án trên Firebase, hãy chọn dự án phù hợp.
+
+3. Sau đó, `flutterfire configure` sẽ tự động tạo file `firebase_options.dart` chứa cấu hình cho Firebase, được đặt trong thư mục `lib/`.
+
+### Bước 4: Cấu hình Firebase trong ứng dụng Flutter
+
+1. Mở file `main.dart`, sau đó import `firebase_options.dart` và khởi tạo Firebase:
+
+   ```dart
+   import 'package:firebase_core/firebase_core.dart';
+   import 'firebase_options.dart';
+
+   void main() async {
+     WidgetsFlutterBinding.ensureInitialized();
+     await Firebase.initializeApp(
+       options: DefaultFirebaseOptions.currentPlatform,
+     );
+     runApp(MyApp());
+   }
+   ```
+
+2. Đảm bảo thêm các package Firebase cần thiết vào `pubspec.yaml`. Ví dụ, nếu bạn muốn sử dụng Firebase Authentication:
+
+   ```yaml
+   dependencies:
+     firebase_core: latest_version
+     firebase_auth: latest_version
+   ```
+
+3. Chạy lệnh `flutter pub get` để cài đặt các package Firebase đã thêm.
+
+### Bước 5: Kiểm tra kết nối
+
+1. Chạy ứng dụng Flutter và kiểm tra xem Firebase đã được kết nối thành công chưa.
+2. Bạn có thể sử dụng Firebase Console để kiểm tra hoạt động của ứng dụng và kiểm tra xem có dữ liệu hay sự kiện nào được gửi lên không.
+
+### Một số lưu ý khi sử dụng `flutterfire configure`
+
+- `flutterfire configure` tự động thiết lập cấu hình Firebase cho nhiều nền tảng (iOS, Android, Web).
+- Khi cấu hình Firebase cho iOS, bạn cần đảm bảo cấu hình `ios/Runner/Info.plist` phù hợp, và với Android thì `android/app/google-services.json` cũng sẽ được tạo.
+  
+Sử dụng `flutterfire configure` giúp đơn giản hóa việc thiết lập Firebase, nhanh chóng kết nối ứng dụng Flutter với Firebase mà không cần phải cấu hình thủ công.
