@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 
 import '../../../routes/app_pages.dart';
 import '../../PageOne/views/page_one_view.dart';
+import '../../PageTwo/views/page_two_view.dart';
+import '../../PageThree/views/page_three_view.dart';
 import '../../home_new/views/home_new_view.dart';
 import '../../userProfile/views/user_profile_view.dart';
 import '../../weatherForecast/views/weather_forecast_view.dart';
@@ -15,8 +17,8 @@ class HomeView extends GetView<HomeController> {
   final BottomNavigationController bottomNavigationController =
       Get.put(BottomNavigationController());
   final screens = [
-    HomeNewView(),
-    PageOneView(),
+    PageThreeView(),
+    PageTwoView(),
     WeatherForecastView(),
     UserProfileView(),
   ];

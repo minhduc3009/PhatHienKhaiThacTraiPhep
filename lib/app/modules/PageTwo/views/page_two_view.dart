@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/page_two_controller.dart';
-import 'package:audiofileplayer/audiofileplayer.dart';
+// import 'package:audiofileplayer/audiofileplayer.dart';
 import 'dart:io';
 
 class PageTwoView extends StatelessWidget {
@@ -81,9 +81,9 @@ class PageTwoView extends StatelessWidget {
   }
 
   void playAudio(File file) {
-    final audio =
-        Audio.load(file.path); // Sử dụng Audio.load thay vì Audio.loadFromFile
-    audio.play();
-    audio.dispose();
+    // final audio =
+    //     Audio.load(file.path); // Sử dụng Audio.load thay vì Audio.loadFromFile
+    // audio.play();
+    // audio.dispose();
   }
 }

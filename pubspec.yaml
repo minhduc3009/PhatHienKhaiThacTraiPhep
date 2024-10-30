@@ -29,7 +29,7 @@ dependencies:
   camera: ^0.10.5+5
   image: ^4.0.17
   path: ^1.8.3
-  path_provider: ^2.0.15
+  path_provider: ^2.1.5
   image_picker: ^0.8.8
   tflite_flutter: ^0.10.3
   flutter_svg_provider: ^1.0.7
@@ -37,8 +37,11 @@ dependencies:
   webview_flutter: ^4.4.1
   shimmer: ^3.0.0
   syncfusion_flutter_gauges: ^23.1.42
-  audiofileplayer: ^2.1.1
+  audioplayers: ^6.1.0
   dio: ^5.7.0
+  tflite_audio: ^0.3.0
+  flutter_sound: ^9.2.13
+  permission_handler: ^11.3.1
 
 flutter_launcher_icons:
   android: "launcher_icon"
