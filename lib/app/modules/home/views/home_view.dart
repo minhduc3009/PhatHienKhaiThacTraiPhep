@@ -19,7 +19,7 @@ class HomeView extends GetView<HomeController> {
   final screens = [
     PageThreeView(),
     PageTwoView(),
-    WeatherForecastView(),
+    PageOneView(),
     UserProfileView(),
   ];
   @override

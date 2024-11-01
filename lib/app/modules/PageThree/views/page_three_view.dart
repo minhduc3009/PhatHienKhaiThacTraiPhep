@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
-// import 'package:flutter/foundation.dart';
+
 class PageThreeView extends StatefulWidget {
   @override
   _PageThreeViewState createState() => _PageThreeViewState();
@@ -23,104 +23,202 @@ class _PageThreeViewState extends State<PageThreeView> {
   Stream<Map<dynamic, dynamic>>? result;
   String _sound = "Press the button to start";
   bool _recording = false;
+  final AudioPlayer audioPlayer = AudioPlayer();
 
-  // Parameters for Teachable Machine model
-  final String model = 'assets/models/soundclassifier.tflite';
-  final String label = 'assets/models/labels.txt';
-  final String inputType = 'rawAudio';
+  // Model parameters
+  final Map<String, dynamic> modelParams = {
+    'model': 'assets/models/soundclassifier.tflite',
+    'label': 'assets/models/labels.txt',
+    'inputType': 'rawAudio',
+    'numThreads': 1,
+    'isAsset': true,
+  };
   final int sampleRate = 44100;
   final int bufferSize = 11016;
   final int numOfInferences = 5;
-  final int numThreads = 1;
-  final bool isAsset = true;
   final double detectionThreshold = 0.3;
-  final int averageWindowDuration = 1000;
-  final int minimumTimeBetweenSamples = 30;
-  final int suppressionTime = 1500;
 
   @override
   void initState() {
     super.initState();
-    fetchLatestFiles();
+    _initializeApp();
     _loadModel();
   }
 
-  // Hàm tải model Teachable Machine
+  Future<void> _initializeApp() async {
+    await _requestPermissions();
+    await _fetchLatestFiles();  // Tải file mới nhất sau khi quyền đã được cấp
+  }
+
   Future<void> _loadModel() async {
     try {
       await TfliteAudio.loadModel(
-        model: model,
-        label: label,
-        inputType: inputType,
-        numThreads: numThreads,
-        isAsset: isAsset,
+        model: modelParams['model'],
+        label: modelParams['label'],
+        inputType: modelParams['inputType'],
+        numThreads: modelParams['numThreads'],
+        isAsset: modelParams['isAsset'],
       );
     } catch (e) {
-      print('Lỗi khi tải model: $e');
+      print('Error loading model: $e');
     }
   }
 
-  // Hàm để lấy file âm thanh và hình ảnh mới nhất từ Firebase Storage
-  Future<void> fetchLatestFiles() async {
+  Future<void> _requestPermissions() async {
+    // Yêu cầu quyền truy cập microphone, storage, photos, audio
+    var statuses = await [
+      Permission.microphone,
+      // Permission.storage,
+      Permission.photos,
+      Permission.audio,
+      Permission.manageExternalStorage
+    ].request();
+
+    if (statuses.values.every((status) => status.isGranted)) {
+      print("=========================>   Permissions granted.     <=========================");
+    } else if (statuses.values.every((status) => status.isDenied || status.isRestricted || status.isPermanentlyDenied)) {
+      print(" XXXXXXXXXXXXXXX Some permissions not granted. Opening app settings. XXXXXXXXXXXXXXX");
+      openAppSettings();
+    }
+    else {
+      // Từ chối, hiển thị thông báo
+      Get.snackbar("Cần quyền truy cập audio", "Vui lòng cấp quyền để tải file âm thanh.");
+    }
+  }
+
+  Future<void> _fetchLatestFiles() async {
+    print('-----------------> _fetchLatestFiles');
     try {
       final audioRef = FirebaseStorage.instance.ref().child('audio');
-      final ListResult audioList = await audioRef.listAll();
       final imageRef = FirebaseStorage.instance.ref().child('data');
+      final ListResult audioList = await audioRef.listAll();
       final ListResult imageList = await imageRef.listAll();
 
-      String? tempAudioUrl;
-      String? tempImageUrl;
-
       if (audioList.items.isNotEmpty) {
-        final latestAudio = audioList.items.reduce((a, b) {
-          return a.name.compareTo(b.name) > 0 ? a : b;
-        });
-        tempAudioUrl = await latestAudio.getDownloadURL();
+        final latestAudio = audioList.items.reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
+        latestAudioUrl = await latestAudio.getDownloadURL();
       }
 
       if (imageList.items.isNotEmpty) {
-        final latestImage = imageList.items.reduce((a, b) {
-          return a.name.compareTo(b.name) > 0 ? a : b;
-        });
-        tempImageUrl = await latestImage.getDownloadURL();
+        final latestImage = imageList.items.reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
+        latestImageUrl = await latestImage.getDownloadURL();
       }
 
-      setState(() {
-        latestAudioUrl = tempAudioUrl;
-        latestImageUrl = tempImageUrl;
-      });
+      // Tải file âm thanh mới nhất về bộ nhớ trong
+      if (latestAudioUrl != null) {
+        print('-----------------> _downloadAudioFileToLocal');
+        await _downloadAudioFileToLocal(latestAudioUrl!);
+      }
+
+      setState(() {});
     } catch (e) {
-      print('Lỗi khi tải file: $e');
+      print('Error fetching files: $e');
     }
   }
-  void _recorderrrrrrr() {
-    String recognition = "";
+
+  Future<void> _downloadAudioFileToLocal(String url) async {
+    try {
+        print('-----------------> _downloadAudioFileToLocal...');
+        final downloadsDir = '/storage/emulated/0/Download';
+        final filePath = '$downloadsDir/latest_audio.wav';
+
+        final audioRef = FirebaseStorage.instance.refFromURL(url);
+        await audioRef.writeToFile(File(filePath));
+
+        // Kiểm tra xem tệp đã được lưu thành công hay chưa
+        if (await File(filePath).exists()) {
+          print('---> _downloadAudioFileToLocal: Audio file saved to: $filePath');
+        } else {
+          print('---> _downloadAudioFileToLocal:Audio file does not exist after download.');
+        }
+    } catch (e) {
+      print('---> _downloadAudioFileToLocal:Error downloading audio file: $e');
+    }
+  }
+
+  Future<void> _playLocalAudio() async {
+    try {
+      // Đường dẫn đến thư mục Download
+      final downloadsDir = '/storage/emulated/0/Download';
+      final filePath = '$downloadsDir/latest_audio.wav';
+      final file = File(filePath);
+
+      // Kiểm tra xem tệp âm thanh đã tồn tại chưa trước khi phát
+      if (await file.exists()) {
+        print('---------->  _playLocalAudio :Playing audio from file: $filePath');
+        await audioPlayer.play(DeviceFileSource(filePath));
+
+        audioPlayer.onPlayerComplete.listen((_) {
+          print("---------->  _playLocalAudio :Playback completed.");
+        });
+      } else {
+        print('---------->  _playLocalAudio :Cannot play audio because the file does not exist.');
+      }
+    } catch (e) {
+      print('---------->  _playLocalAudio :Error playing audio: $e');
+    }
+  }
+
+  void _startAudioRecognition() {
     if (!_recording) {
       setState(() {
         _recording = true;
+        _sound = "Recognizing...";
       });
       result = TfliteAudio.startAudioRecognition(
-        sampleRate: 44100,
-        bufferSize: 22016,
-        numOfInferences: 5,
-        detectionThreshold: 0.3,
+        sampleRate: sampleRate,
+        bufferSize: bufferSize,
+        numOfInferences: numOfInferences,
+        detectionThreshold: detectionThreshold,
       );
       result?.listen((event) {
-        recognition = event["recognitionResult"];
+        setState(() {
+          _sound = event["recognitionResult"].toString();
+        });
       }).onDone(() {
         setState(() {
           _recording = false;
-          _sound = recognition.split(" ")[1];
         });
       });
     }
   }
 
-  void _stop() {
+  void _stopRecognition() {
     TfliteAudio.stopAudioRecognition();
     setState(() => _recording = false);
   }
 
+  Future<void> _recognizeAudio() async {
+    try {
+      final downloadsDir = '/storage/emulated/0/Download';
+      final filePath = '$downloadsDir/latest_audio.wav';
+      final file = File(filePath);
+
+      // Kiểm tra xem tệp âm thanh đã tồn tại chưa trước khi phát
+      if (await file.exists()) {
+        print('---------->  _recognizeAudio :_recognizeAudio from file: $filePath');
+      } else {
+        print('---------->  _recognizeAudio :Cannot _recognizeAudio because the file does not exist.');
+      }
+
+      result = TfliteAudio.startFileRecognition(
+        audioDirectory: filePath,
+        sampleRate: sampleRate,
+      );
+
+      result?.listen((event) {
+        setState(() {
+          recognitionResult = event["recognitionResult"].toString();
+        });
+      }).onDone(() {
+        setState(() {
+          _isRecording = false;
+        });
+      });
+    } catch (e) {
+      print('Error recognizing audio: $e');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,172 +232,31 @@ class _PageThreeViewState extends State<PageThreeView> {
             if (latestAudioUrl != null) ...[
               ElevatedButton(
                 onPressed: () async {
-                  await playAudio(latestAudioUrl!);
-                  await recognizeAudio(latestAudioUrl!); // Nhận dạng file âm thanh tải từ Firebase
+                  await _playLocalAudio();
+                  await _recognizeAudio();
                 },
-                child: Text('Phát âm thanh mới nhất'),
+                child: Text('Phát & Nhận dạng âm thanh mới nhất'),
               ),
-              SizedBox(height: 20),
             ],
-            if (latestImageUrl != null) ...[
-              Image.network(
-                latestImageUrl!,
-                height: 200,
-                width: 200,
-              ),
-              SizedBox(height: 20),
-            ],
-            // ElevatedButton(
-            //   onPressed: _isRecording ? stopRecording : startRecording,
-            //   child: Text(_isRecording ? 'Dừng ghi âm' : 'Ghi âm'),
-            // ),
+            if (latestImageUrl != null)
+              Image.network(latestImageUrl!, height: 200, width: 200),
             MaterialButton(
-                onPressed: _recorderrrrrrr,
-                color: _recording ? Colors.grey : Colors.pink,
-                textColor: Colors.white,
-                shape: const CircleBorder(),
-                padding: const EdgeInsets.all(25),
-                child: const Icon(Icons.mic, size: 60),
-              ),
+              onPressed: _startAudioRecognition,
+              color: _recording ? Colors.grey : Colors.pink,
+              textColor: Colors.white,
+              shape: CircleBorder(),
+              padding: EdgeInsets.all(25),
+              child: Icon(Icons.mic, size: 60),
+            ),
             SizedBox(height: 20),
             Text(
               _sound,
-              style: const TextStyle(
-                color: Colors.green,
-                fontSize: 30,
-                fontWeight: FontWeight.w400,
-              ),
+              style: TextStyle(color: Colors.green, fontSize: 30, fontWeight: FontWeight.w400),
             ),
           ],
         ),
       ),
     );
-  }
-
-  // Hàm phát âm thanh từ URL
-  // Future<void> playAudio(String url) async {
-  //   final AudioPlayer audioPlayer = AudioPlayer();
-  //   try {
-  //     // Sử dụng UrlSource để phát âm thanh từ URL
-  //     await audioPlayer.play(UrlSource(url));
-
-  //     // Lắng nghe sự kiện hoàn thành phát để giải phóng tài nguyên
-  //     audioPlayer.onPlayerComplete.listen((_) {
-  //       audioPlayer.dispose();
-  //     });
-  //   } catch (e) {
-  //     print('Lỗi khi phát âm thanh: $e');
-  //   }
-  // }
-
-  Future<void> playAudio(String url) async {
-    final AudioPlayer audioPlayer = AudioPlayer();
-
-    // Kiểm tra quyền truy cập bộ nhớ
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      // Yêu cầu quyền nếu chưa được cấp
-      status = await Permission.storage.request();
-      if (!status.isGranted) {
-        print("Quyền truy cập bộ nhớ đã bị từ chối.");
-        return;
-      }
-    }
-
-    try {
-      // Phát âm thanh từ URL
-      await audioPlayer.play(UrlSource(url));
-
-      // Lắng nghe sự kiện hoàn thành phát để giải phóng tài nguyên
-      audioPlayer.onPlayerComplete.listen((_) {
-        audioPlayer.dispose();
-      });
-    } catch (e) {
-      print('Lỗi khi phát âm thanh: $e');
-    }
-  }
-
-  // Hàm nhận dạng âm thanh từ file .wav
-  Future<void> recognizeAudio(String url) async {
-    try {
-      // Tải file âm thanh về thiết bị
-      Directory tempDir = await getTemporaryDirectory();
-      String tempPath = '${tempDir.path}/latest_audio.wav';
-      final audioRef = FirebaseStorage.instance.refFromURL(url);
-      await audioRef.writeToFile(File(tempPath));
-
-      // Nhận dạng âm thanh từ file
-      result = TfliteAudio.startFileRecognition(
-        audioDirectory: tempPath,
-        sampleRate: sampleRate,
-        // bufferSize: bufferSize,
-        // numOfInferences: numOfInferences,
-        // detectionThreshold: detectionThreshold,
-        // averageWindowDuration: averageWindowDuration,
-        // minimumTimeBetweenSamples: minimumTimeBetweenSamples,
-        // suppressionTime: suppressionTime,
-      );
-
-      result?.listen((event) {
-        setState(() {
-          recognitionResult = event["recognitionResult"].toString();
-        });
-      }).onDone(() {
-        setState(() {
-          _isRecording = false;
-        });
-      });
-    } catch (e) {
-      print('Lỗi nhận dạng âm thanh: $e');
-    }
-  }
-
-  // Hàm bắt đầu ghi âm
-  Future<void> startRecording() async {
-    try {
-      await _recorder.openRecorder();
-      Directory tempDir = await getTemporaryDirectory();
-      String tempPath = '${tempDir.path}/recorded_audio.wav';
-      await _recorder.startRecorder(toFile: tempPath);
-      setState(() {
-        _isRecording = true;
-      });
-
-      // Nhận dạng âm thanh từ ghi âm
-      result = TfliteAudio.startAudioRecognition(
-        sampleRate: sampleRate,
-        bufferSize: bufferSize,
-        numOfInferences: numOfInferences,
-        detectionThreshold: detectionThreshold,
-        // averageWindowDuration: averageWindowDuration,
-        // minimumTimeBetweenSamples: minimumTimeBetweenSamples,
-        // suppressionTime: suppressionTime,
-      );
-
-      result?.listen((event) {
-        setState(() {
-          recognitionResult = event["recognitionResult"].toString();
-        });
-      }).onDone(() {
-        setState(() {
-          _isRecording = false;
-        });
-      });
-    } catch (e) {
-      print('Lỗi khi bắt đầu ghi âm: $e');
-    }
-  }
-
-  // Hàm dừng ghi âm
-  Future<void> stopRecording() async {
-    try {
-      await _recorder.stopRecorder();
-      setState(() {
-        _isRecording = false;
-      });
-    } catch (e) {
-      print('Lỗi khi dừng ghi âm: $e');
-    }
   }
 
   @override

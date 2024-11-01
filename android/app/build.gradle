@@ -64,6 +64,9 @@ android {
     aaptOptions {
         noCompress 'tflite'
     }
+    lintOptions {
+        disable 'InvalidPackage'
+    }
 }
 
 flutter {
