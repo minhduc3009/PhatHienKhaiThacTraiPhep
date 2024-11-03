@@ -1,4 +1,2 @@
 0 Background Noise
-1 Bell
-2 Whistle
-3 Xylophone
+1 Tieng Cong Nong

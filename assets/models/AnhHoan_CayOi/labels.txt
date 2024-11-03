@@ -1,5 +1,0 @@
-0 Canker
-1 Dot
-2 Healthy
-3 Mummification
-4 Rust
