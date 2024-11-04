@@ -17,8 +17,8 @@ class PageThreeView extends StatefulWidget {
 class _PageThreeViewState extends State<PageThreeView> {
   String? latestAudioUrl;
   String? latestImageUrl;
-  String? previousAudioUrl;  // Khai báo biến lưu URL file audio cũ
-  String? previousImageUrl;  // Khai báo biến lưu URL file image cũ
+  String? previousAudioUrl; // Khai báo biến lưu URL file audio cũ
+  String? previousImageUrl; // Khai báo biến lưu URL file image cũ
   String recognitionResult = '';
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   bool _isRecording = false;
@@ -69,12 +69,14 @@ class _PageThreeViewState extends State<PageThreeView> {
       final ListResult imageList = await imageRef.listAll();
 
       if (audioList.items.isNotEmpty) {
-        final latestAudio = audioList.items.reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
+        final latestAudio = audioList.items
+            .reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
         latestAudioUrl = await latestAudio.getDownloadURL();
       }
 
       if (imageList.items.isNotEmpty) {
-        final latestImage = imageList.items.reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
+        final latestImage = imageList.items
+            .reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
         latestImageUrl = await latestImage.getDownloadURL();
       }
 
@@ -88,16 +90,16 @@ class _PageThreeViewState extends State<PageThreeView> {
         await _downloadAudioFileToLocal(latestAudioUrl!);
         await _playAndRecognizeAudio();
       }
-      
+
       setState(() {});
     } catch (e) {
       print('Error fetching files: $e');
     }
   }
-  
+
   Future<void> _initializeApp() async {
     await _requestPermissions();
-    await _fetchLatestFiles();  // Tải file mới nhất sau khi quyền đã được cấp
+    await _fetchLatestFiles(); // Tải file mới nhất sau khi quyền đã được cấp
   }
 
   Future<void> _loadModel() async {
@@ -125,7 +127,8 @@ class _PageThreeViewState extends State<PageThreeView> {
     if (statuses.values.every((status) => status.isGranted)) {
       print("Permissions granted.");
     } else {
-      Get.snackbar("Audio Permission", "Please enable audio access to use this feature.");
+      Get.snackbar("Audio Permission",
+          "Please enable audio access to use this feature.");
     }
   }
 
@@ -137,18 +140,22 @@ class _PageThreeViewState extends State<PageThreeView> {
       final ListResult imageList = await imageRef.listAll();
 
       if (audioList.items.isNotEmpty) {
-        final latestAudio = audioList.items.reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
+        final latestAudio = audioList.items
+            .reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
         final newAudioUrl = await latestAudio.getDownloadURL();
-        if (newAudioUrl != latestAudioUrl) { // Kiểm tra nếu có file mới
+        if (newAudioUrl != latestAudioUrl) {
+          // Kiểm tra nếu có file mới
           latestAudioUrl = newAudioUrl;
           await _downloadAudioFileToLocal(latestAudioUrl!);
         }
       }
 
       if (imageList.items.isNotEmpty) {
-        final latestImage = imageList.items.reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
+        final latestImage = imageList.items
+            .reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
         final newImageUrl = await latestImage.getDownloadURL();
-        if (newImageUrl != latestImageUrl) { // Kiểm tra nếu có ảnh mới
+        if (newImageUrl != latestImageUrl) {
+          // Kiểm tra nếu có ảnh mới
           latestImageUrl = newImageUrl;
         }
       }
@@ -216,9 +223,9 @@ class _PageThreeViewState extends State<PageThreeView> {
       result?.listen((event) {
         setState(() {
           _sound = event["recognitionResult"].toString();
-          print("-->Recognition Result: " + event["recognitionResult"].toString());
+          print("-->Recognition Result: " +
+              event["recognitionResult"].toString());
         });
-       
       }).onDone(() {
         setState(() {
           _recording = false;
@@ -256,7 +263,10 @@ class _PageThreeViewState extends State<PageThreeView> {
             SizedBox(height: 20),
             Text(
               _sound,
-              style: TextStyle(color: Colors.green, fontSize: 30, fontWeight: FontWeight.w400),
+              style: TextStyle(
+                  color: Colors.green,
+                  fontSize: 30,
+                  fontWeight: FontWeight.w400),
             ),
           ],
         ),

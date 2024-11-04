@@ -21,44 +21,227 @@ import '../features/article/models/article_model.dart';
 import '../features/article/screens/article_detail_screen.dart';
 import '../features/article/widgets/article_widget.dart';
 
+import 'package:tflite_audio/tflite_audio.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:async'; // Thêm import để sử dụng Timer
+
 class HomeNewView extends StatefulWidget {
   @override
   _HomeNewViewState createState() => _HomeNewViewState();
 }
 
 class _HomeNewViewState extends State<HomeNewView> {
-  final HomeNewController controller = Get.put(HomeNewController());
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  bool isRecording = false;
-  String imageUrl = '';
+  String? latestAudioUrl;
+  String? latestImageUrl;
+  String? previousAudioUrl; // Khai báo biến lưu URL file audio cũ
+  String? previousImageUrl; // Khai báo biến lưu URL file image cũ
+  String recognitionResult = '';
+  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  bool _isRecording = false;
+  Stream<Map<dynamic, dynamic>>? result;
+  String _sound = "Press the button to start";
+  bool _recording = false;
+  final AudioPlayer audioPlayer = AudioPlayer();
+  Timer? _timer; // Biến timer
+
+  // Model parameters
+  final Map<String, dynamic> modelParams = {
+    'model': 'assets/models/soundclassifier.tflite',
+    'label': 'assets/models/labels.txt',
+    'inputType': 'rawAudio',
+    'numThreads': 1,
+    'isAsset': true,
+  };
+  final int sampleRate = 44100;
+  final int bufferSize = 11016;
+  final int numOfInferences = 5;
+  final double detectionThreshold = 0.3;
 
   @override
   void initState() {
     super.initState();
-    _loadImageFromFirebase();
-  }
-
-  Future<void> _loadImageFromFirebase() async {
-    // Tải hình ảnh mới nhất từ Firebase Storage
-    final ref = FirebaseStorage.instance.ref().child("latest_image.jpg");
-    final url = await ref.getDownloadURL();
-    setState(() {
-      imageUrl = url;
+    _initializeApp();
+    _loadModel();
+    _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+      _checkForNewFiles();
     });
   }
 
-  void _toggleRecording() {
-    setState(() {
-      isRecording = !isRecording;
-    });
-    // Thêm logic ghi âm tại đây (nếu cần)
+  // Hàm kiểm tra file mới mỗi 10 giây
+  Future<void> _checkForNewFiles() async {
+    try {
+      final audioRef = FirebaseStorage.instance.ref().child('audio');
+      final imageRef = FirebaseStorage.instance.ref().child('data');
+      final ListResult audioList = await audioRef.listAll();
+      final ListResult imageList = await imageRef.listAll();
+
+      if (audioList.items.isNotEmpty) {
+        final latestAudio = audioList.items
+            .reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
+        latestAudioUrl = await latestAudio.getDownloadURL();
+      }
+
+      if (imageList.items.isNotEmpty) {
+        final latestImage = imageList.items
+            .reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
+        latestImageUrl = await latestImage.getDownloadURL();
+      }
+
+      // Chỉ tải và nhận dạng nếu có file mới
+      // if (latestAudioUrl != previousAudioUrl || latestImageUrl != previousImageUrl) {
+      if (latestAudioUrl != previousAudioUrl) {
+        previousAudioUrl = latestAudioUrl;
+        previousImageUrl = latestImageUrl;
+        print('latestAudioUrl: $latestAudioUrl');
+        print('latestImageUrl: $latestImageUrl');
+        await _downloadAudioFileToLocal(latestAudioUrl!);
+        await _playAndRecognizeAudio();
+      }
+
+      setState(() {});
+    } catch (e) {
+      print('Error fetching files: $e');
+    }
   }
 
-  void _playAudio() async {
-    // Chạy một tệp âm thanh hoặc stream
-    await _audioPlayer.play(
-        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-            as Source);
+  Future<void> _initializeApp() async {
+    await _requestPermissions();
+    await _fetchLatestFiles(); // Tải file mới nhất sau khi quyền đã được cấp
+  }
+
+  Future<void> _loadModel() async {
+    try {
+      await TfliteAudio.loadModel(
+        model: modelParams['model'],
+        label: modelParams['label'],
+        inputType: modelParams['inputType'],
+        numThreads: modelParams['numThreads'],
+        isAsset: modelParams['isAsset'],
+      );
+    } catch (e) {
+      print('Error loading model: $e');
+    }
+  }
+
+  Future<void> _requestPermissions() async {
+    var statuses = await [
+      Permission.microphone,
+      Permission.photos,
+      Permission.audio,
+      Permission.manageExternalStorage,
+    ].request();
+
+    if (statuses.values.every((status) => status.isGranted)) {
+      print("Permissions granted.");
+    } else {
+      Get.snackbar("Audio Permission",
+          "Please enable audio access to use this feature.");
+    }
+  }
+
+  Future<void> _fetchLatestFiles() async {
+    try {
+      final audioRef = FirebaseStorage.instance.ref().child('audio');
+      final imageRef = FirebaseStorage.instance.ref().child('data');
+      final ListResult audioList = await audioRef.listAll();
+      final ListResult imageList = await imageRef.listAll();
+
+      if (audioList.items.isNotEmpty) {
+        final latestAudio = audioList.items
+            .reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
+        final newAudioUrl = await latestAudio.getDownloadURL();
+        if (newAudioUrl != latestAudioUrl) {
+          // Kiểm tra nếu có file mới
+          latestAudioUrl = newAudioUrl;
+          await _downloadAudioFileToLocal(latestAudioUrl!);
+        }
+      }
+
+      if (imageList.items.isNotEmpty) {
+        final latestImage = imageList.items
+            .reduce((a, b) => a.name.compareTo(b.name) > 0 ? a : b);
+        final newImageUrl = await latestImage.getDownloadURL();
+        if (newImageUrl != latestImageUrl) {
+          // Kiểm tra nếu có ảnh mới
+          latestImageUrl = newImageUrl;
+        }
+      }
+
+      setState(() {}); // Cập nhật UI nếu có thay đổi
+    } catch (e) {
+      print('Error fetching files: $e');
+    }
+  }
+
+  Future<void> _downloadAudioFileToLocal(String url) async {
+    try {
+      final downloadsDir = (await getExternalStorageDirectory())!.path;
+      final filePath = '$downloadsDir/latest_audio.wav';
+
+      final audioRef = FirebaseStorage.instance.refFromURL(url);
+      await audioRef.writeToFile(File(filePath));
+
+      if (await File(filePath).exists()) {
+        print('Audio file saved to: $filePath');
+      } else {
+        print('Audio file not found after download.');
+      }
+    } catch (e) {
+      print('Error downloading audio file: $e');
+    }
+  }
+
+  Future<void> _playAndRecognizeAudio() async {
+    await _playLocalAudio();
+    _startAudioRecognition();
+  }
+
+  Future<void> _playLocalAudio() async {
+    try {
+      final downloadsDir = (await getExternalStorageDirectory())!.path;
+      final filePath = '$downloadsDir/latest_audio.wav';
+      final file = File(filePath);
+
+      if (await file.exists()) {
+        await audioPlayer.play(DeviceFileSource(filePath));
+        audioPlayer.onPlayerComplete.listen((_) {
+          print("Playback completed.");
+        });
+      } else {
+        print('Cannot play audio; file not found.');
+      }
+    } catch (e) {
+      print('Error playing audio: $e');
+    }
+  }
+
+  void _startAudioRecognition() {
+    if (!_recording) {
+      setState(() {
+        _recording = true;
+        _sound = "Recognizing...";
+      });
+      result = TfliteAudio.startAudioRecognition(
+        sampleRate: 16000,
+        bufferSize: 2000,
+        numOfInferences: 2,
+        detectionThreshold: 0.3,
+      );
+      result?.listen((event) {
+        setState(() {
+          _sound = event["recognitionResult"].toString();
+          print("-->Recognition Result: " +
+              event["recognitionResult"].toString());
+        });
+      }).onDone(() {
+        setState(() {
+          _recording = false;
+        });
+      });
+    }
   }
 
   @override
@@ -164,13 +347,23 @@ class _HomeNewViewState extends State<HomeNewView> {
                 children: [
                   IconButton(
                     icon: Icon(Icons.play_arrow),
-                    onPressed: _playAudio,
+                    onPressed: _playAndRecognizeAudio,
                   ),
-                  IconButton(
-                    icon: Icon(isRecording ? Icons.stop : Icons.mic),
-                    onPressed: _toggleRecording,
+                  MaterialButton(
+                    onPressed: _startAudioRecognition,
+                    color: _recording ? Colors.grey : Colors.pink,
+                    textColor: Colors.white,
+                    shape: CircleBorder(),
+                    padding: EdgeInsets.all(6),
+                    child: Icon(Icons.mic, size: 15),
                   ),
-                  Text(isRecording ? "Đang ghi âm..." : "Không ghi âm"),
+                  Text(
+                    _sound,
+                    style: const TextStyle(
+                        color: Colors.green,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w100),
+                  ),
                 ],
               ),
             ],
@@ -181,10 +374,8 @@ class _HomeNewViewState extends State<HomeNewView> {
           Column(
             children: [
               // 3.1 Hiển thị Hình ảnh
-              imageUrl.isNotEmpty
-                  ? Image.network(imageUrl,
-                      height: 200, width: double.infinity, fit: BoxFit.cover)
-                  : CircularProgressIndicator(),
+              if (latestImageUrl != null)
+                Image.network(latestImageUrl!, height: 300, width: 300),
               // 3.2 Nút Chụp Ảnh và Kết quả nhận dạng âm thanh
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -231,5 +422,12 @@ class _HomeNewViewState extends State<HomeNewView> {
         ],
       ),
     ));
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Huỷ timer khi thoát page
+    _recorder.closeRecorder();
+    super.dispose();
   }
 }

@@ -18,7 +18,7 @@ class HomeView extends GetView<HomeController> {
       Get.put(BottomNavigationController());
   final screens = [
     HomeNewView(),
-    PageThreeView(),
+    PageOneView(),
     PageTwoView(),
     WeatherForecastView(),
     UserProfileView(),
