@@ -25,7 +25,7 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
             Container(
               height: 350,
               alignment: Alignment.center,
-              child: Lottie.asset("assets/images/farm_animation.json"),
+              child: Lottie.asset("assets/images/Animation_MachineLearning.json"),
             ),
             Container(
                 margin: const EdgeInsets.symmetric(horizontal: 50.0),

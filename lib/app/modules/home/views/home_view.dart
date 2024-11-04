@@ -17,9 +17,10 @@ class HomeView extends GetView<HomeController> {
   final BottomNavigationController bottomNavigationController =
       Get.put(BottomNavigationController());
   final screens = [
+    HomeNewView(),
     PageThreeView(),
     PageTwoView(),
-    PageOneView(),
+    WeatherForecastView(),
     UserProfileView(),
   ];
   @override
@@ -34,26 +35,30 @@ class HomeView extends GetView<HomeController> {
         bottomNavigationBar: ConvexAppBar(
           items: const [
             TabItem(
-              icon: Icons.home,
+              icon: Icons.home_work_outlined,
               title: 'Home',
             ),
             TabItem(
-              icon: Icons.qr_code_scanner,
-              title: 'Plant',
+              icon: Icons.home_work,
+              title: 'Home2',
+            ),
+            TabItem(
+              icon: Icons.history,
+              title: 'History',
             ),
             TabItem(
               icon: Icons.sunny_snowing,
               title: 'Weather',
             ),
             TabItem(
-              icon: Icons.people,
+              icon: Icons.manage_accounts_outlined,
               title: 'Account',
             ),
           ],
           onTap: (index) {
             bottomNavigationController.changeIndex(index);
           },
-          backgroundColor: Colors.teal,
+          backgroundColor: Colors.deepOrangeAccent,
         ));
   }
 }

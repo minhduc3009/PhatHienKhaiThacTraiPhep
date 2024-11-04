@@ -91,7 +91,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
         automaticallyImplyLeading: false,
         leadingWidth: 30,
         title: const Text(
-          "PlantSR", //"Bác Sĩ Nông Nghiệp-360",
+          "AIoT-Nano",
           style: TextStyle(color: Colors.black),
         ),
         actions: [

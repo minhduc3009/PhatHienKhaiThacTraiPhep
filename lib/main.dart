@@ -15,7 +15,7 @@ void main() async {
     GetMaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
-      title: "PlantSR",
+      title: "AIoT-Nano",
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

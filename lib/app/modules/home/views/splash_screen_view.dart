@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // checkUser();
     initialization();
     Future.delayed(
-      const Duration(seconds: 6),
+      const Duration(seconds: 3),
       () {
         Get.offNamed(Routes.LOGIN); // Đóng màn hình SplashScreen
       },

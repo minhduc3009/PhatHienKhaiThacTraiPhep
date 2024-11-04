@@ -11,7 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 class UserProfileView extends GetView<UserProfileController> {
   UserProfileView({Key? key}) : super(key: key);
 
-  final Uri _urlBlog = Uri.parse('https://plantsr-vn.blogspot.com');
+  final Uri _urlBlog = Uri.parse('https://AIoT-Nano-vn.blogspot.com');
   Future<void> _launchUrl() async {
     if (!await launchUrl(_urlBlog)) {
       throw Exception('Could not launch $_urlBlog');
@@ -61,14 +61,14 @@ class UserProfileView extends GetView<UserProfileController> {
                 CircleAvatar(
                   radius: 50.0,
                   backgroundImage: NetworkImage(
-                      'https://cdn-icons-png.flaticon.com/512/190/190683.png'),
+                      'https://cdn-icons-png.flaticon.com/512/9787/9787450.png'),
                 ),
                 SizedBox(width: 16.0),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Science - Creativity',
+                      'Giám Sát Viên',
                       style: TextStyle(
                         fontSize: 20.0,
                         fontWeight: FontWeight.bold,
