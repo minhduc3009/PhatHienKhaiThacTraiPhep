@@ -93,10 +93,6 @@ class _HomeNewViewState extends State<HomeNewView> {
                               style: TextStyle(
                                   fontSize: 10, fontWeight: FontWeight.w600),
                             ),
-                            // Image.asset(
-                            //   ImageConstant.logoTextApp,
-                            //   height: 18,
-                            // ),
                             SizedBox(
                               height: 4,
                             ),
@@ -118,246 +114,6 @@ class _HomeNewViewState extends State<HomeNewView> {
           SizedBox(
             height: 10,
           ),
-          // ignore: prefer_const_constructors
-          Obx(
-            () => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    SizedBox(
-                      height: 100,
-                      width: 120, // Điều chỉnh chiều cao ở đây
-                      child: SfRadialGauge(
-                        title: GaugeTitle(
-                            text:
-                                'Temperature:\n${controller.nhiet_do.value} C'),
-                        axes: <RadialAxis>[
-                          RadialAxis(
-                            minimum: 0,
-                            maximum: 100,
-                            ranges: <GaugeRange>[
-                              GaugeRange(
-                                  startValue: 0,
-                                  endValue: 33,
-                                  color: Colors.green),
-                              GaugeRange(
-                                  startValue: 34,
-                                  endValue: 66,
-                                  color: Colors.yellow),
-                              GaugeRange(
-                                  startValue: 67,
-                                  endValue: 100,
-                                  color: Colors.red),
-                            ],
-                            pointers: <GaugePointer>[
-                              NeedlePointer(value: controller.nhiet_do.value),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                        height: 100,
-                        width: 90, // Điều chỉnh chiều cao ở đây
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors
-                                    .teal, // Foreground color (text color) for the 'On' button
-                              ),
-                              onPressed: () {
-                                print("On Relay1");
-                                controller.updateRelayState_1(true);
-                              },
-                              child: const Text(
-                                'On Relay1',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.w400),
-                              ),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors
-                                    .teal, // Foreground color (text color) for the 'On' button
-                              ),
-                              onPressed: () {
-                                print("OFFFF Relay1");
-                                controller.updateRelayState_1(false);
-                              },
-                              child: const Text(
-                                'Off Relay1',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.w400),
-                              ),
-                            ),
-                          ],
-                        )),
-                    SizedBox(
-                      height: 100,
-                      width: 120, // Điều chỉnh chiều cao ở đây
-                      child: SfRadialGauge(
-                        title: GaugeTitle(
-                            text:
-                                'Air humidity:\n${controller.doam_khongkhi.value}%'),
-                        axes: <RadialAxis>[
-                          RadialAxis(
-                            minimum: 0,
-                            maximum: 100,
-                            ranges: <GaugeRange>[
-                              GaugeRange(
-                                  startValue: 0,
-                                  endValue: 33,
-                                  color: Colors.green),
-                              GaugeRange(
-                                  startValue: 34,
-                                  endValue: 66,
-                                  color: Colors.yellow),
-                              GaugeRange(
-                                  startValue: 67,
-                                  endValue: 100,
-                                  color: Colors.red),
-                            ],
-                            pointers: <GaugePointer>[
-                              NeedlePointer(
-                                  value: double.tryParse(controller
-                                          .doam_khongkhi.value
-                                          .toString()) ??
-                                      0.0),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ]),
-            ),
-          ),
-          Obx(
-            () => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    SizedBox(
-                      height: 100,
-                      width: 120, // Điều chỉnh chiều cao ở đây
-                      child: SfRadialGauge(
-                        title:
-                            GaugeTitle(text: 'PH:\n ${controller.do_ph.value}'),
-                        axes: <RadialAxis>[
-                          RadialAxis(
-                            minimum: 0,
-                            maximum: 14,
-                            ranges: <GaugeRange>[
-                              GaugeRange(
-                                  startValue: 0,
-                                  endValue: 5,
-                                  color: Colors.green),
-                              GaugeRange(
-                                  startValue: 5,
-                                  endValue: 10,
-                                  color: Colors.yellow),
-                              GaugeRange(
-                                  startValue: 10,
-                                  endValue: 14,
-                                  color: Colors.red),
-                            ],
-                            pointers: <GaugePointer>[
-                              NeedlePointer(value: controller.do_ph.value),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                        height: 100,
-                        width: 90, // Điều chỉnh chiều cao ở đây
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors
-                                    .teal, // Foreground color (text color) for the 'On' button
-                              ),
-                              onPressed: () {
-                                print("ON Relay2");
-                                controller.updateRelayState_2(true);
-                              },
-                              child: const Text(
-                                'On Relay2',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.w400),
-                              ),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors
-                                    .teal, // Foreground color (text color) for the 'On' button
-                              ),
-                              onPressed: () {
-                                print("OFFFF Relay2");
-                                controller.updateRelayState_2(false);
-                              },
-                              child: const Text(
-                                'Off Relay2',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.w400),
-                              ),
-                            ),
-                          ],
-                        )),
-                    SizedBox(
-                      height: 100,
-                      width: 120, // Điều chỉnh chiều cao ở đây
-                      child: SfRadialGauge(
-                        title: GaugeTitle(
-                            text:
-                                'Soil moisture:\n${controller.doam_dat.value}%'),
-                        axes: <RadialAxis>[
-                          RadialAxis(
-                            minimum: 0,
-                            maximum: 100,
-                            ranges: <GaugeRange>[
-                              GaugeRange(
-                                  startValue: 0,
-                                  endValue: 33,
-                                  color: Colors.green),
-                              GaugeRange(
-                                  startValue: 34,
-                                  endValue: 66,
-                                  color: Colors.yellow),
-                              GaugeRange(
-                                  startValue: 67,
-                                  endValue: 100,
-                                  color: Colors.red),
-                            ],
-                            pointers: <GaugePointer>[
-                              NeedlePointer(
-                                  value: double.tryParse(controller
-                                          .doam_dat.value
-                                          .toString()) ??
-                                      0.0),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ]),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
@@ -367,18 +123,18 @@ class _HomeNewViewState extends State<HomeNewView> {
                   mapMenu.length,
                   (index) => GestureDetector(
                         onTap: () {
-                          if (mapMenu.values.elementAt(index) ==
-                              "Fertilizer calculation") {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => OnBoardingScreen()));
-                          } else if (mapMenu.values.elementAt(index) ==
-                              "Pests and Plant Diseases") {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => CultivationScreen()));
-                          } else {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => PengolahanScreen()));
-                          }
+                          // if (mapMenu.values.elementAt(index) ==
+                          //     "Fertilizer calculation") {
+                          //   Navigator.of(context).push(MaterialPageRoute(
+                          //       builder: (context) => OnBoardingScreen()));
+                          // } else if (mapMenu.values.elementAt(index) ==
+                          //     "Pests and Plant Diseases") {
+                          //   Navigator.of(context).push(MaterialPageRoute(
+                          //       builder: (context) => CultivationScreen()));
+                          // } else {
+                          //   Navigator.of(context).push(MaterialPageRoute(
+                          //       builder: (context) => PengolahanScreen()));
+                          // }
                         },
                         child: Container(
                           width: 60,
@@ -451,24 +207,24 @@ class _HomeNewViewState extends State<HomeNewView> {
               ],
             ),
           ),
-          ListView.builder(
-            padding: EdgeInsets.only(bottom: 24),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 5,
-            itemBuilder: ((context, index) {
-              return GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => ArticleDetailScreen(
-                          source: _information[index].sumber)));
-                },
-                child: CardArtikel(
-                  data: _information[index],
-                ),
-              );
-            }),
-          ),
+          // ListView.builder(
+          //   padding: EdgeInsets.only(bottom: 24),
+          //   shrinkWrap: true,
+          //   physics: const NeverScrollableScrollPhysics(),
+          //   itemCount: 5,
+          //   itemBuilder: ((context, index) {
+          //     return GestureDetector(
+          //       onTap: () {
+          //         Navigator.of(context).push(MaterialPageRoute(
+          //             builder: (_) => ArticleDetailScreen(
+          //                 source: _information[index].sumber)));
+          //       },
+          //       child: CardArtikel(
+          //         data: _information[index],
+          //       ),
+          //     );
+          //   }),
+          // ),
         ],
       ),
     ));
