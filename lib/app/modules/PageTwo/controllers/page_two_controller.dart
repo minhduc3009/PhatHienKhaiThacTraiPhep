@@ -18,6 +18,7 @@ class PageTwoController extends GetxController {
     fetchAndDownloadFiles();
   }
 
+  // Tải các file cục bộ từ bộ nhớ
   Future<void> loadLocalFiles() async {
     final directory = await getApplicationDocumentsDirectory();
     final imageDir = Directory('${directory.path}/images');
@@ -31,6 +32,7 @@ class PageTwoController extends GetxController {
     }
   }
 
+  // Tải và lưu các file từ Firebase
   Future<void> fetchAndDownloadFiles() async {
     // Tải và lưu ảnh từ Firebase
     final ListResult imageResult =
@@ -48,9 +50,11 @@ class PageTwoController extends GetxController {
       await downloadFile(url, 'audio');
     }));
 
-    loadLocalFiles(); // Tải lại các file đã lưu về
+    // Sau khi tải file xong, tải lại danh sách file cục bộ
+    loadLocalFiles();
   }
 
+  // Tải file từ URL và lưu vào thư mục cục bộ
   Future<void> downloadFile(String url, String folder) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
@@ -67,5 +71,24 @@ class PageTwoController extends GetxController {
     } catch (e) {
       print('Download error: $e');
     }
+  }
+
+  // Hàm làm mới dữ liệu (tải lại từ Firebase)
+  void refreshData() async {
+    // Xóa các file cục bộ hiện tại trước khi tải lại dữ liệu
+    final directory = await getApplicationDocumentsDirectory();
+    final imageDir = Directory('${directory.path}/images');
+    final audioDir = Directory('${directory.path}/audio');
+
+    if (await imageDir.exists()) {
+      imageDir.deleteSync(recursive: true); // Xóa toàn bộ thư mục ảnh cục bộ
+    }
+    if (await audioDir.exists()) {
+      audioDir.deleteSync(
+          recursive: true); // Xóa toàn bộ thư mục âm thanh cục bộ
+    }
+
+    // Tải lại file từ Firebase
+    await fetchAndDownloadFiles();
   }
 }

@@ -1,4 +1,4 @@
-# Hướng Dẫn Cài Đặt, Biên dịch code, và Sử Dụng Ứng Dụng farm_care_ai Flutter
+# Hướng Dẫn Cài Đặt, Biên dịch code, và Sử Dụng Ứng Dụng Flutter
 
 ## Giới Thiệu
 
@@ -7,13 +7,18 @@
 ## Yêu Cầu Hệ Thống
 
 - [Flutter](https://flutter.dev/docs/get-started/install)
-- [FVM](https://fvm.app/docs/getting_started/installation)
+- [FVM](https://fvm.app/documentation/getting-started/installation)
 - [Visual Studio Code](https://code.visualstudio.com/) (khuyến nghị)
-- [Android Studio](https://developer.android.com/studio) (để build Android)
+- [Android Studio](https://developer.android.com/studio/archive)(để build Android)
+  Tải bản phù hợp với Version Flutter : Ở đây tôi đang chạy với Android Studio Jellyfish | 2023.3.1
+  Link tải chi tiết tại:
+  https://redirector.gvt1.com/edgedl/android/studio/install/2023.3.1.1/android-studio-2023.3.1.1-windows.exe
 - [Xcode](https://developer.apple.com/xcode/) (để build iOS, chỉ trên macOS)
 
-# Cài Đặt Các Công Cụ Cần
+# Hướng dẫn Cài Đặt Các Công Cụ Cần
+
 ## FVM : Công cụ quản lý phiên bản
+
 ### Bước 1: Cài Đặt FVM : Flutter Version Management (FVM)
 
 Nếu bạn chưa cài đặt FVM, hãy cài đặt bằng lệnh sau:
@@ -109,8 +114,10 @@ fvm flutter build ios --release
 ```
 
 ==========================================================================
+
 # Hướng Dẫn FireBase và Flutter
-Để kết nối ứng dụng Flutter với Firebase, bạn cần cài đặt và cấu hình công cụ Firebase CLI và FlutterFire CLI. 
+
+Để kết nối ứng dụng Flutter với Firebase, bạn cần cài đặt và cấu hình công cụ Firebase CLI và FlutterFire CLI.
 Dưới đây là các bước hướng dẫn chi tiết:
 
 ### Bước 1: Cài đặt Firebase CLI
@@ -187,5 +194,5 @@ Dưới đây là các bước hướng dẫn chi tiết:
 
 - `flutterfire configure` tự động thiết lập cấu hình Firebase cho nhiều nền tảng (iOS, Android, Web).
 - Khi cấu hình Firebase cho iOS, bạn cần đảm bảo cấu hình `ios/Runner/Info.plist` phù hợp, và với Android thì `android/app/google-services.json` cũng sẽ được tạo.
-  
+
 Sử dụng `flutterfire configure` giúp đơn giản hóa việc thiết lập Firebase, nhanh chóng kết nối ứng dụng Flutter với Firebase mà không cần phải cấu hình thủ công.

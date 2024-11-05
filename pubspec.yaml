@@ -87,6 +87,7 @@ flutter:
     - assets/images/
     - assets/locales/
     - assets/models/
+    - assets/models/CayOi/
     - assets/models/decoded_wav/
     - assets/icons/
     - assets/weather/

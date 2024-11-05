@@ -38,9 +38,9 @@ class ImageClassificationHelper {
     // }
 
     // Use Metal Delegate
-    if (Platform.isIOS) {
-      options.addDelegate(GpuDelegate());
-    }
+    // if (Platform.isIOS) {
+    //   options.addDelegate(GpuDelegate());
+    // }
 
     // Load model from assets
     interpreter = await Interpreter.fromAsset(modelPath, options: options);

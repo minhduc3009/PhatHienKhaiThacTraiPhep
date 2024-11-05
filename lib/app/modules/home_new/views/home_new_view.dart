@@ -1,25 +1,17 @@
 import 'package:aiot_nano/app/modules/PageTwo/views/page_two_view.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_svg_provider/flutter_svg_provider.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:wave/wave.dart';
 import 'package:wave/config.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-import '../controllers/home_new_controller.dart';
+import '../../PageOne/helper/image_classification_helper.dart';
 import '../constants/color_constant.dart';
-import '../constants/icon_constant.dart';
 import '../constants/image_constant.dart';
-import '../features/article/screens/article_screen.dart';
-import '../features/cultivation_menu/screens/cultivation_screen.dart';
-import '../features/guide/screens/guide_screen.dart';
-import '../features/plant_processing/screens/plant_processing_screen.dart';
 import '../features/article/models/article_model.dart';
-import '../features/article/screens/article_detail_screen.dart';
-import '../features/article/widgets/article_widget.dart';
 
 import 'package:tflite_audio/tflite_audio.dart';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -27,6 +19,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async'; // Thêm import để sử dụng Timer
+import 'package:image/image.dart' as img;
 
 class HomeNewView extends StatefulWidget {
   @override
@@ -40,7 +33,6 @@ class _HomeNewViewState extends State<HomeNewView> {
   String? previousImageUrl; // Khai báo biến lưu URL file image cũ
   String recognitionResult = '';
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
-  bool _isRecording = false;
   Stream<Map<dynamic, dynamic>>? result;
   String _sound = "Press the button to start";
   bool _recording = false;
@@ -60,14 +52,179 @@ class _HomeNewViewState extends State<HomeNewView> {
   final int numOfInferences = 5;
   final double detectionThreshold = 0.3;
 
+  //
+  ImageClassificationHelper? imageClassificationHelper;
+  final imagePicker = ImagePicker();
+  String? imagePath;
+  img.Image? image;
+  Map<String, double>? classification;
+  bool cameraIsAvailable = Platform.isAndroid || Platform.isIOS;
+  List<dynamic>? result_images;
+  String? resultHighestLabel;
+  double? resultHighestConfidence;
+
+  bool _loading = false;
+  final _information = informasi;
+  int indexResult = 0;
   @override
   void initState() {
+    imageClassificationHelper = ImageClassificationHelper();
+    imageClassificationHelper!.initHelper();
     super.initState();
     _initializeApp();
     _loadModel();
-    _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       _checkForNewFiles();
     });
+  }
+
+// Clean old results when press some take picture button
+  void cleanResult() {
+    imagePath = null;
+    image = null;
+    classification = null;
+    _loading = false;
+    result_images = null;
+    resultHighestLabel = null;
+    resultHighestConfidence = null;
+    setState(() {});
+  }
+
+  List<dynamic> getHighestConfidenceLabelAndValue(
+      Map<String, double> classification) {
+    String? highestLabel;
+    double highestConfidence = 0.0;
+
+    classification.forEach((label, confidence) {
+      if (confidence > highestConfidence) {
+        highestConfidence = confidence;
+        highestLabel = label;
+      }
+    });
+
+    return [highestLabel, highestConfidence];
+  }
+
+  Future<void> processImageFirebase() async {
+    final downloadsDir = (await getExternalStorageDirectory())!.path;
+    final imagePath =
+        '$downloadsDir/latest_images.jpg'; // Đường dẫn đến ảnh vừa tải về
+
+    if (File(imagePath).existsSync()) {
+      // Kiểm tra nếu file tồn tại
+      final imageData = File(imagePath).readAsBytesSync();
+
+      image = img.decodeImage(imageData);
+
+      classification = await imageClassificationHelper?.inferenceImage(image!);
+
+      if (classification != null) {
+        _loading = true;
+
+        result_images = getHighestConfidenceLabelAndValue(classification!);
+        resultHighestLabel = result_images?[0];
+        resultHighestConfidence = result_images?[1];
+
+        print("resultHighestLabel--->$resultHighestLabel");
+        print("resultHighestConfidence--->$resultHighestConfidence");
+
+        List<String> valuesToCheck = [
+          "bệnh đốm lá",
+          "bệnh khô đột",
+          "bệnh rỉ sét",
+          "bệnh thán thư",
+          "cây khỏe mạnh",
+          "bệnh rầy mềm",
+          "bệnh phấn trắng"
+        ];
+
+        String cleanedLabel = resultHighestLabel!.trim().toLowerCase();
+        print("--->$cleanedLabel");
+        if (valuesToCheck.contains(cleanedLabel)) {
+          indexResult = valuesToCheck.indexOf(cleanedLabel);
+          print("---> $indexResult");
+        }
+      }
+
+      // Kiểm tra độ chính xác
+      if (resultHighestConfidence != null && resultHighestConfidence! < 0.7) {
+        showLowConfidenceDialog();
+      } else {
+        setState(() {});
+      }
+    } else {
+      if (kDebugMode) {
+        print('Image file does not exist at: $imagePath');
+      }
+    }
+  }
+
+  // Process picked image
+  Future<void> processImage() async {
+    // Đường dẫn đến ảnh vừa tải về
+    if (imagePath != null) {
+      final imageData = File(imagePath!).readAsBytesSync();
+
+      image = img.decodeImage(imageData);
+      // setState(() {});
+      classification = await imageClassificationHelper?.inferenceImage(image!);
+
+      if (classification != null) {
+        _loading = true;
+        result_images = getHighestConfidenceLabelAndValue(classification!);
+        resultHighestLabel = result_images?[0];
+        resultHighestConfidence = result_images?[1];
+
+        print("resultHighestLabel--->$resultHighestLabel");
+        print("resultHighestConfidence--->$resultHighestConfidence");
+
+        List<String> valuesToCheck = [
+          "bệnh đốm lá",
+          "bệnh khô đột",
+          "bệnh rỉ sét",
+          "bệnh thán thư",
+          "cây khỏe mạnh",
+          "bệnh rầy mềm",
+          "bệnh phấn trắng"
+        ];
+        String cleanedLabel = resultHighestLabel!.trim().toLowerCase();
+        print("--->$cleanedLabel");
+        if (valuesToCheck.contains(cleanedLabel)) {
+          indexResult = valuesToCheck.indexOf(cleanedLabel);
+          print("---> $indexResult");
+        }
+      }
+      // setState(() {});
+      // Sau phần xử lý kết quả phân loại
+      if (resultHighestConfidence != null && resultHighestConfidence! < 0.86) {
+        // Kiểm tra nếu tỷ lệ tự tin thấp hơn ngưỡng 0.7
+        showLowConfidenceDialog();
+      } else {
+        // Hiển thị thông tin trên giao diện người dùng
+        setState(() {});
+      }
+    }
+  }
+
+// Hàm hiển thị thông báo cho tỷ lệ tự tin thấp
+  void showLowConfidenceDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Unable to identify'),
+          content: Text('Image quality is low or subject is not correct.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Đóng dialog
+              },
+              child: Text('Đóng'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // Hàm kiểm tra file mới mỗi 10 giây
@@ -94,16 +251,28 @@ class _HomeNewViewState extends State<HomeNewView> {
       // if (latestAudioUrl != previousAudioUrl || latestImageUrl != previousImageUrl) {
       if (latestAudioUrl != previousAudioUrl) {
         previousAudioUrl = latestAudioUrl;
-        previousImageUrl = latestImageUrl;
-        print('latestAudioUrl: $latestAudioUrl');
-        print('latestImageUrl: $latestImageUrl');
+        if (kDebugMode) {
+          print('latestAudioUrl: $latestAudioUrl');
+        }
+        // Nhận dạng âm thanh
         await _downloadAudioFileToLocal(latestAudioUrl!);
         await _playAndRecognizeAudio();
+      }
+      if (latestImageUrl != previousImageUrl) {
+        previousImageUrl = latestImageUrl;
+        if (kDebugMode) {
+          print('latestImageUrl: $latestImageUrl');
+        }
+        // Nhận dạng hình ảnh
+        await _downloadImagesFileToLocal(latestImageUrl!);
+        await processImageFirebase();
       }
 
       setState(() {});
     } catch (e) {
-      print('Error fetching files: $e');
+      if (kDebugMode) {
+        print('Error fetching files: $e');
+      }
     }
   }
 
@@ -122,7 +291,9 @@ class _HomeNewViewState extends State<HomeNewView> {
         isAsset: modelParams['isAsset'],
       );
     } catch (e) {
-      print('Error loading model: $e');
+      if (kDebugMode) {
+        print('Error loading model: $e');
+      }
     }
   }
 
@@ -135,7 +306,9 @@ class _HomeNewViewState extends State<HomeNewView> {
     ].request();
 
     if (statuses.values.every((status) => status.isGranted)) {
-      print("Permissions granted.");
+      if (kDebugMode) {
+        print("Permissions granted.");
+      }
     } else {
       Get.snackbar("Audio Permission",
           "Please enable audio access to use this feature.");
@@ -172,7 +345,9 @@ class _HomeNewViewState extends State<HomeNewView> {
 
       setState(() {}); // Cập nhật UI nếu có thay đổi
     } catch (e) {
-      print('Error fetching files: $e');
+      if (kDebugMode) {
+        print('Error fetching files: $e');
+      }
     }
   }
 
@@ -185,12 +360,42 @@ class _HomeNewViewState extends State<HomeNewView> {
       await audioRef.writeToFile(File(filePath));
 
       if (await File(filePath).exists()) {
-        print('Audio file saved to: $filePath');
+        if (kDebugMode) {
+          print('Audio file saved to: $filePath');
+        }
       } else {
-        print('Audio file not found after download.');
+        if (kDebugMode) {
+          print('Audio file not found after download.');
+        }
       }
     } catch (e) {
-      print('Error downloading audio file: $e');
+      if (kDebugMode) {
+        print('Error downloading audio file: $e');
+      }
+    }
+  }
+
+  Future<void> _downloadImagesFileToLocal(String url) async {
+    try {
+      final downloadsDir = (await getExternalStorageDirectory())!.path;
+      final filePath = '$downloadsDir/latest_images.jpg';
+
+      final imageRef = FirebaseStorage.instance.refFromURL(url);
+      await imageRef.writeToFile(File(filePath));
+
+      if (await File(filePath).exists()) {
+        if (kDebugMode) {
+          print('Images file saved to: $filePath');
+        }
+      } else {
+        if (kDebugMode) {
+          print('Images file not found after download.');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error downloading Images file: $e');
+      }
     }
   }
 
@@ -208,13 +413,19 @@ class _HomeNewViewState extends State<HomeNewView> {
       if (await file.exists()) {
         await audioPlayer.play(DeviceFileSource(filePath));
         audioPlayer.onPlayerComplete.listen((_) {
-          print("Playback completed.");
+          if (kDebugMode) {
+            print("Playback completed.");
+          }
         });
       } else {
-        print('Cannot play audio; file not found.');
+        if (kDebugMode) {
+          print('Cannot play audio; file not found.');
+        }
       }
     } catch (e) {
-      print('Error playing audio: $e');
+      if (kDebugMode) {
+        print('Error playing audio: $e');
+      }
     }
   }
 
@@ -233,8 +444,9 @@ class _HomeNewViewState extends State<HomeNewView> {
       result?.listen((event) {
         setState(() {
           _sound = event["recognitionResult"].toString();
-          print("-->Recognition Result: " +
-              event["recognitionResult"].toString());
+          if (kDebugMode) {
+            print("-->Recognition Result: ${event["recognitionResult"]}");
+          }
         });
       }).onDone(() {
         setState(() {
@@ -333,12 +545,12 @@ class _HomeNewViewState extends State<HomeNewView> {
                     ],
                     durations: [3500, 1940],
                     heightPercentages: [0.2, 0.5],
-                    blur: MaskFilter.blur(BlurStyle.solid, 10),
+                    blur: const MaskFilter.blur(BlurStyle.solid, 10),
                   ),
                   waveAmplitude: 0,
                   waveFrequency: 2,
                   backgroundColor: Colors.transparent,
-                  size: Size(double.infinity, 100),
+                  size: const Size(double.infinity, 100),
                 ),
               ),
               // 2.2 Nút phát nhạc, Nút ghi âm và Kết quả nhận dạng âm thanh
@@ -346,22 +558,22 @@ class _HomeNewViewState extends State<HomeNewView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.play_arrow),
+                    icon: const Icon(Icons.play_arrow),
                     onPressed: _playAndRecognizeAudio,
                   ),
                   MaterialButton(
                     onPressed: _startAudioRecognition,
                     color: _recording ? Colors.grey : Colors.pink,
                     textColor: Colors.white,
-                    shape: CircleBorder(),
-                    padding: EdgeInsets.all(6),
-                    child: Icon(Icons.mic, size: 15),
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(6),
+                    child: const Icon(Icons.mic, size: 16),
                   ),
                   Text(
                     _sound,
                     style: const TextStyle(
                         color: Colors.green,
-                        fontSize: 10,
+                        fontSize: 20,
                         fontWeight: FontWeight.w100),
                   ),
                 ],
@@ -369,25 +581,126 @@ class _HomeNewViewState extends State<HomeNewView> {
             ],
           ),
           Divider(thickness: 5, color: Colors.grey.withOpacity(0.1)),
-
           // 3. Hiển thị hình ảnh mới nhất từ Firebase
           Column(
             children: [
               // 3.1 Hiển thị Hình ảnh
               if (latestImageUrl != null)
-                Image.network(latestImageUrl!, height: 300, width: 300),
+                Image.network(latestImageUrl!, height: 200, width: 200),
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // Căn giữa nội dung trong hàng
+                children: [
+                  const Text(
+                    'Predicted results \nfrom Firebase:',
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  const SizedBox(width: 15), // Khoảng cách giữa hai Text
+                  Text(
+                    resultHighestLabel ?? "--",
+                    style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepOrangeAccent),
+                  ),
+                  Text(
+                    "(Accuracy:${resultHighestConfidence?.toStringAsFixed(1)})" ??
+                        "--",
+                    style: const TextStyle(
+                        fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
               // 3.2 Nút Chụp Ảnh và Kết quả nhận dạng âm thanh
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.camera_alt),
-                    onPressed: () {
-                      // Thêm logic chụp ảnh và lưu vào Firebase
+                  if (cameraIsAvailable)
+                    TextButton.icon(
+                      onPressed: () async {
+                        cleanResult();
+                        final result = await imagePicker.pickImage(
+                          source: ImageSource.camera,
+                        );
+                        imagePath = result?.path;
+                        setState(() {});
+                        processImage();
+                      },
+                      icon: const Icon(
+                        Icons.camera,
+                        size: 35,
+                      ),
+                      label: const Text("Take a photo"),
+                    ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      cleanResult();
+                      final result = await imagePicker.pickImage(
+                        source: ImageSource.gallery,
+                      );
+
+                      imagePath = result?.path;
+                      setState(() {});
+                      processImage();
                     },
+                    icon: const Icon(
+                      Icons.photo,
+                      size: 35,
+                    ),
+                    label: const Text("Collection"),
                   ),
-                  Text("Kết quả nhận dạng ảnh"),
                 ],
+              ),
+              if (imagePath != null)
+                SizedBox(
+                  width: 150,
+                  height: 150,
+                  child: Image.file(
+                    File(imagePath!),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              if (image == null)
+                SizedBox(
+                  width: 150,
+                  height: 150,
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/holder_image.png',
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      )
+                    ],
+                  ),
+                ),
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // Căn giữa nội dung trong hàng
+                children: [
+                  const Text(
+                    'Predicted results \nfr Camera/Gallery:',
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  const SizedBox(width: 5), // Khoảng cách giữa hai Text
+                  Text(
+                    resultHighestLabel ?? "--",
+                    style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepOrangeAccent),
+                  ),
+                  Text(
+                    "(${resultHighestConfidence?.toStringAsFixed(1)})" ?? "--",
+                    style: const TextStyle(
+                        fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 10,
               ),
             ],
           ),
