@@ -63,6 +63,10 @@ class _HomeNewViewState extends State<HomeNewView> {
   String? resultHighestLabel;
   double? resultHighestConfidence;
 
+  List<dynamic>? result_imagesFb;
+  String? resultHighestLabelFb;
+  double? resultHighestConfidenceFb;
+
   bool _loading = false;
   final _information = informasi;
   int indexResult = 0;
@@ -124,15 +128,15 @@ class _HomeNewViewState extends State<HomeNewView> {
       if (classification != null) {
         _loading = true;
 
-        result_images = getHighestConfidenceLabelAndValue(classification!);
-        resultHighestLabel = result_images?[0];
-        resultHighestConfidence = result_images?[1];
+        result_imagesFb = getHighestConfidenceLabelAndValue(classification!);
+        resultHighestLabelFb = result_imagesFb?[0];
+        resultHighestConfidenceFb = result_imagesFb?[1];
 
         if (kDebugMode) {
           print(
-              "processImageFirebase -----> resultHighestLabel--->$resultHighestLabel");
+              "processImageFirebase -----> resultHighestLabelFb--->$resultHighestLabelFb");
           print(
-              "processImageFirebase -----> resultHighestConfidence--->$resultHighestConfidence");
+              "processImageFirebase -----> resultHighestConfidenceFb--->$resultHighestConfidenceFb");
         }
 
         List<String> valuesToCheck = [
@@ -143,7 +147,7 @@ class _HomeNewViewState extends State<HomeNewView> {
           "Xe tải-Truck"
         ];
 
-        String cleanedLabel = resultHighestLabel!.trim().toLowerCase();
+        String cleanedLabel = resultHighestLabelFb!.trim().toLowerCase();
         if (kDebugMode) {
           print("processImageFirebase -----> cleanedLabel--->$cleanedLabel");
         }
@@ -156,7 +160,8 @@ class _HomeNewViewState extends State<HomeNewView> {
       }
 
       // Kiểm tra độ chính xác
-      if (resultHighestConfidence != null && resultHighestConfidence! < 0.7) {
+      if (resultHighestConfidenceFb != null &&
+          resultHighestConfidenceFb! < 0.7) {
         showLowConfidenceDialog();
       } else {
         setState(() {});
@@ -616,14 +621,15 @@ class _HomeNewViewState extends State<HomeNewView> {
                   ),
                   const SizedBox(width: 15), // Khoảng cách giữa hai Text
                   Text(
-                    resultHighestLabel ?? "--",
+                    resultHighestLabelFb ?? "--",
                     style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.deepOrangeAccent),
                   ),
                   Text(
-                    "(${resultHighestConfidence?.toStringAsFixed(1)})" ?? "--",
+                    "(${resultHighestConfidenceFb?.toStringAsFixed(1)})" ??
+                        "--",
                     style: const TextStyle(
                         fontSize: 10, fontWeight: FontWeight.bold),
                   ),
