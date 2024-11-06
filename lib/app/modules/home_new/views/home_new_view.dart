@@ -112,6 +112,9 @@ class _HomeNewViewState extends State<HomeNewView> {
 
     if (File(imagePath).existsSync()) {
       // Kiểm tra nếu file tồn tại
+      if (kDebugMode) {
+        print("processImageFirebase -----> imagePath: $imagePath");
+      }
       final imageData = File(imagePath).readAsBytesSync();
 
       image = img.decodeImage(imageData);
@@ -125,24 +128,30 @@ class _HomeNewViewState extends State<HomeNewView> {
         resultHighestLabel = result_images?[0];
         resultHighestConfidence = result_images?[1];
 
-        print("resultHighestLabel--->$resultHighestLabel");
-        print("resultHighestConfidence--->$resultHighestConfidence");
+        if (kDebugMode) {
+          print(
+              "processImageFirebase -----> resultHighestLabel--->$resultHighestLabel");
+          print(
+              "processImageFirebase -----> resultHighestConfidence--->$resultHighestConfidence");
+        }
 
         List<String> valuesToCheck = [
-          "bệnh đốm lá",
-          "bệnh khô đột",
-          "bệnh rỉ sét",
-          "bệnh thán thư",
-          "cây khỏe mạnh",
-          "bệnh rầy mềm",
-          "bệnh phấn trắng"
+          "Máy kéo-Tractor",
+          "Máy xúc-Excavators",
+          "Ô tô con-Car",
+          "Xe Taxi",
+          "Xe tải-Truck"
         ];
 
         String cleanedLabel = resultHighestLabel!.trim().toLowerCase();
-        print("--->$cleanedLabel");
+        if (kDebugMode) {
+          print("processImageFirebase -----> cleanedLabel--->$cleanedLabel");
+        }
         if (valuesToCheck.contains(cleanedLabel)) {
           indexResult = valuesToCheck.indexOf(cleanedLabel);
-          print("---> $indexResult");
+          if (kDebugMode) {
+            print("processImageFirebase -----> indexResult---> $indexResult");
+          }
         }
       }
 
@@ -154,7 +163,8 @@ class _HomeNewViewState extends State<HomeNewView> {
       }
     } else {
       if (kDebugMode) {
-        print('Image file does not exist at: $imagePath');
+        print(
+            'processImageFirebase -----> Image file does not exist at: $imagePath');
       }
     }
   }
@@ -166,6 +176,9 @@ class _HomeNewViewState extends State<HomeNewView> {
       final imageData = File(imagePath!).readAsBytesSync();
 
       image = img.decodeImage(imageData);
+      if (kDebugMode) {
+        print("processImage -----> imagePath: $imagePath");
+      }
       // setState(() {});
       classification = await imageClassificationHelper?.inferenceImage(image!);
 
@@ -175,23 +188,28 @@ class _HomeNewViewState extends State<HomeNewView> {
         resultHighestLabel = result_images?[0];
         resultHighestConfidence = result_images?[1];
 
-        print("resultHighestLabel--->$resultHighestLabel");
-        print("resultHighestConfidence--->$resultHighestConfidence");
+        if (kDebugMode) {
+          print("processImage ----->resultHighestLabel--->$resultHighestLabel");
+          print(
+              "processImage ----->resultHighestConfidence--->$resultHighestConfidence");
+        }
 
         List<String> valuesToCheck = [
-          "bệnh đốm lá",
-          "bệnh khô đột",
-          "bệnh rỉ sét",
-          "bệnh thán thư",
-          "cây khỏe mạnh",
-          "bệnh rầy mềm",
-          "bệnh phấn trắng"
+          "Máy kéo-Tractor",
+          "Máy xúc-Excavators",
+          "Ô tô con-Car",
+          "Xe Taxi",
+          "Xe tải-Truck"
         ];
         String cleanedLabel = resultHighestLabel!.trim().toLowerCase();
-        print("--->$cleanedLabel");
+        if (kDebugMode) {
+          print("processImage ----->cleanedLabel--->$cleanedLabel");
+        }
         if (valuesToCheck.contains(cleanedLabel)) {
           indexResult = valuesToCheck.indexOf(cleanedLabel);
-          print("---> $indexResult");
+          if (kDebugMode) {
+            print("processImage -----> indexResult --> $indexResult");
+          }
         }
       }
       // setState(() {});
@@ -212,14 +230,15 @@ class _HomeNewViewState extends State<HomeNewView> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Unable to identify'),
-          content: Text('Image quality is low or subject is not correct.'),
+          title: const Text('Unable to identify'),
+          content:
+              const Text('Image quality is low or subject is not correct.'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context); // Đóng dialog
               },
-              child: Text('Đóng'),
+              child: const Text('Đóng'),
             ),
           ],
         );
@@ -592,20 +611,19 @@ class _HomeNewViewState extends State<HomeNewView> {
                     MainAxisAlignment.center, // Căn giữa nội dung trong hàng
                 children: [
                   const Text(
-                    'Predicted results \nfrom Firebase:',
+                    'From Firebase:',
                     style: TextStyle(fontSize: 15),
                   ),
                   const SizedBox(width: 15), // Khoảng cách giữa hai Text
                   Text(
                     resultHighestLabel ?? "--",
                     style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.deepOrangeAccent),
                   ),
                   Text(
-                    "(Accuracy:${resultHighestConfidence?.toStringAsFixed(1)})" ??
-                        "--",
+                    "(${resultHighestConfidence?.toStringAsFixed(1)})" ?? "--",
                     style: const TextStyle(
                         fontSize: 10, fontWeight: FontWeight.bold),
                   ),
@@ -681,14 +699,14 @@ class _HomeNewViewState extends State<HomeNewView> {
                     MainAxisAlignment.center, // Căn giữa nội dung trong hàng
                 children: [
                   const Text(
-                    'Predicted results \nfr Camera/Gallery:',
+                    'From Camera/Gallery:',
                     style: TextStyle(fontSize: 15),
                   ),
                   const SizedBox(width: 5), // Khoảng cách giữa hai Text
                   Text(
                     resultHighestLabel ?? "--",
                     style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.deepOrangeAccent),
                   ),

@@ -18,7 +18,7 @@ class HomeView extends GetView<HomeController> {
       Get.put(BottomNavigationController());
   final screens = [
     HomeNewView(),
-    PageOneView(),
+    // PageOneView(),
     PageTwoView(),
     WeatherForecastView(),
     UserProfileView(),
@@ -38,10 +38,10 @@ class HomeView extends GetView<HomeController> {
               icon: Icons.home_work_outlined,
               title: 'Home',
             ),
-            TabItem(
-              icon: Icons.home_work,
-              title: 'Home2',
-            ),
+            // TabItem(
+            //   icon: Icons.home_work,
+            //   title: 'Home2',
+            // ),
             TabItem(
               icon: Icons.history,
               title: 'History',

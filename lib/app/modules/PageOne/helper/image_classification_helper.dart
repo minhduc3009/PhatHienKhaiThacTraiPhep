@@ -13,8 +13,8 @@ class ImageClassificationHelper {
   // static const modelPath = 'assets/models/mobilenet_quant.tflite';
   // static const labelsPath = 'assets/models/labels.txt';
 
-  static const modelPath = 'assets/models/CayOi/model.tflite';
-  static const labelsPath = 'assets/models/CayOi/labels.txt';
+  static const modelPath = 'assets/models/models_images/model.tflite';
+  static const labelsPath = 'assets/models/models_images/labels.txt';
 
   late final Interpreter interpreter;
   late final List<String> labels;

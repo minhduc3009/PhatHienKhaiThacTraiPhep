@@ -88,7 +88,7 @@ class UserProfileView extends GetView<UserProfileController> {
                               style: TextStyle(
                                 fontSize: 22.0,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Colors.orange,
                               ),
                             ),
                             SizedBox(height: 8.0),
@@ -96,13 +96,14 @@ class UserProfileView extends GetView<UserProfileController> {
                               '$infoUserEmail',
                               style: TextStyle(
                                 fontSize: 16.0,
-                                color: Colors.white70,
+                                color: Colors.orange,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Divider(thickness: 1, color: Colors.white54),
+                      Divider(
+                          thickness: 1, color: Colors.grey.withOpacity(0.1)),
                       // Thông tin người dùng
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 16.0),
